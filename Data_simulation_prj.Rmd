@@ -1,0 +1,278 @@
+---
+title: "Internal and External Resources as Determinants of Health and Quality of Life"
+author: "Qianran(Zoe) Wang"
+date: 5/16/2016
+---
+### Resource
+Greimel, E., Kato, Y., Müller-Gartner, M., Salchinger, B., Roth, R., & Freidl, W. (2016). Internal and External Resources as Determinants of Health and Quality of Life. PLOS ONE, 11(5), e0153232. doi:10.1371/journal.pone.0153232
+
+### Introduction
+The data simulation project is based on the article "Internal and External Resources as Determinants of Health and Quality of Life", published on May 2nd, 2016. The study was based on the salutogenic model, which is an approach focusing on factors that support human health and well-being, rather than on factors that cause disease. Salutogenic model has a strong relation to sense of coherence (SOC), positive subjective health and quality of life (QoL). The aim of the original study was to compare internal and external resources, life style factors, perceived health and QoL in Japan and Austria and to determine associations among these factors. 
+
+#### Sense of Coherence
+Sense of Coherence is a central concept within Salutogenic model and an important factor of quality of life. It is how confident a person feels about his/her environment, and can make reasonable prediction about how things will work out. Generally speacking, it's a mixture of optimism and control.
+
+### Method
+The research was a survey-baased study, 460 Japanese (N = 460) and 421 Austrian (N = 421) students participated in some self-report health questionnaires including: 
+1. Sense of Coherence Scale (SOC-13)
+2. Social and Gender Role Scale
+3. Multidimensional Scale of Perceived Social Support (MSPSS)
+4. Dutch Eating Behaviour Questionnaire (DEBQ)
+5. SF-12 Health Survey
+6. Cross-cultural Health Survey. 
+The study was conducted with SPSS, all the features appear in the report are significant and no need for additional feature selection. 
+
+### Data Structure
+Based on the description of the data, three data frames are generated: 
+    **austria_df**
+    **japan_df**
+    **all_df**
+all_df is a combination of austria_df and japan_df.
+
+1. Data frame dimention
+    * austria_df: 421 obs, 18 variables
+    * japan_df: 460 obs, 18 variables
+    * all_df: 881 obs, 18 variables
+2. Data description
+    * Sense of Coherence (SOC-13): 
+        * three components: comprehensibility, manageability, meaningfulness (equally weighted)
+        * Total score: 13-91
+        * Higher - stronger SOC
+    * Social and Gender Role Scale
+        * Likert scale - 1 = do not agree at all, 5 = completely agree
+        * Higher - more traditional gender roles
+    * Multidimensional Scale of Perceived Social Support (MSPSS)
+        * Three sub-sclaes: support form family, support from friends and support from significant others
+        * Likert scale - 1: do not agree at all 7: completely agree
+        * Higher - higher level of social support
+    * Dutch Eating Behavior Questionnaire (DEBQ)
+        * Three sub-sclaes:
+          * Emotional Eating eg. Do you have the desire to eat when you are irrateted?
+          * External Eating eg. Do you eat more than usual when you see others eating?
+          * Restraind Eating eg. Do you deliberately eat less in order no to become heavier?
+        * Likert scale - 1 = do not agree at all, 5 = completely agree
+    * SF-12 Health Survey
+        * QoL of Physical health
+        * QoL of Mental health
+        * Higher - better QoL
+    * Cross-cultural Health Survey
+        * Socio-demographics: gender, age, years of eduction.
+        * Life style factors: exercise/sports (hours/minutes per week), level of stress (linear self-assessment analogue 0-100)
+        * Emotional strain
+            * In the evening:
+              * your daily work does not go out of your mind
+              * you feel tired or exhausted
+              * you feel unsatisfied or depressed
+              * you need to go to bed early
+              * 1 = often, 4 = never
+              * Higher - less strain
+        * Symptoms
+            * eg. headache, heart problem, shortage of breath, sensitive stomach, nervousness, chest pain
+            * 1 = almost every day, 5 = never
+            * Higher - better health status
+3. Predictor and Response Viriables
+    * Response Variables
+        * Physical QoL (numerical)
+        * Mental QoL (numerical)
+        * Emotional Strain (numerical)
+        * Symptoms (numerical)
+    * Predictor Variables
+        * Gender (Factor)
+        * Age (numerical)
+        * Education (numerical)
+        * SOC (numerical)
+        * Significant others support (numerical)
+        * Friends support (numerical)
+        * Family support (numerical)
+        * Gender role (numerical)
+        * Restrained eating (numerical)
+        * Emotional eating (numerical)
+        * External eating (numerical)
+        * Stress (numerical)
+        * Sports (numerical)
+
+### Data Simulation Process
+1. Set seed
+```{r, include=FALSE}
+set.seed(123)
+```
+2. Since all variables have a fixed intervel, first create a customized random function `rtnorm` to generate random numbers. With parameters N, mean, sd, min and max.
+```{r, include=FALSE}
+rtnorm <- function(N, mean, sd, min, max) {
+  qnorm(runif(N, pnorm(min, mean, sd), pnorm(max, mean, sd)), mean, sd)
+}
+```
+3. Based on mean and SE (standard error), create function `generate_df`, put in each given mean and SE as parameters and generate a dataframe with all predictor variables. Since the article only gave SE, the function need to convert SE to SD using formula `SD = SE * Sqrt(n)`. All variables are normally distributed except `gender`. The funtion used Binoulli Distribution `gender <- rbinom(N, 1, female_percentage)` to generate gender column. With `1` represents `female` and `0` represents `male`. 
+```{r, include=FALSE}
+generate_df <- function(N, age_mean, edu_mean, female_percentage, 
+                        sport_mean, sport_se, stress_mean, stress_se,
+                        restrained_eating_mean, restrained_eating_se,
+                        emotional_eating_mean, emotional_eating_se,
+                        external_eating_mean, external_eating_se,
+                        gender_social_role_mean, gender_social_role_se,
+                        soc_mean, soc_se, family_support_mean, family_support_se,
+                        friends_support_mean, friends_support_se,
+                        sign_support_mean, sign_support_se){
+  age <- rnorm(N, age_mean)
+  edu <- rnorm(N, edu_mean)
+  gender <- rbinom(N, 1, female_percentage)
+  sports <- rnorm(N, sport_mean, sport_se * sqrt(N))
+  sports <- ifelse(sports < 0, sport_mean, sports)
+  stress <- rtnorm(N, stress_mean, stress_se * sqrt(N), 0, 100)
+  restrained_eating <- rtnorm(N, restrained_eating_mean, restrained_eating_se * sqrt(N), 10, 50)
+  emotional_eating <- rtnorm(N, emotional_eating_mean, emotional_eating_se * sqrt(N), 13, 65)
+  external_eating <- rtnorm(N, external_eating_mean, external_eating_se * sqrt(N), 10, 50)
+  gender_social_role <- rtnorm(N, gender_social_role_mean, gender_social_role_se * sqrt(N), 5, 25)
+  soc <- rtnorm(N, soc_mean, soc_se * sqrt(N), 13, 91)
+  family_support <- rtnorm(N, family_support_mean, family_support_se * sqrt(N), 4, 28)
+  friends_support <- rtnorm(N, friends_support_mean, friends_support_se * sqrt(N), 4, 28)
+  sign_support <- rtnorm(N, sign_support_mean, sign_support_se * sqrt(N), 4, 28)
+  df <- data.frame(age, edu, gender, sports, stress, restrained_eating, emotional_eating, external_eating,
+                   gender_social_role, soc, family_support, friends_support, sign_support)
+  return(df)
+}
+```
+4. Create data frame **austria_df** and **japan_df**
+```{r, include=FALSE}
+austria_df <- generate_df(N=421, age_mean = 22.13, edu_mean = 15.13, female_percentage = 0.563,
+                          sport_mean = 2.45, sport_se = 0.09, stress_mean = 51, stress_se = 1.47,
+                          restrained_eating_mean = 22.63, restrained_eating_se = 0.34,
+                          emotional_eating_mean = 29.82, emotional_eating_se = 0.44,
+                          external_eating_mean = 21.94, external_eating_se = 0.28,
+                          gender_social_role_mean = 10.96, gender_social_role_se = 0.18,
+                          soc_mean = 61.74, soc_se = 0.28,
+                          family_support_mean = 24.4, family_support_se = 0.32,
+                          friends_support_mean = 24.83, friends_support_se = 0.3,
+                          sign_support_mean = 25.15, sign_support_se = 0.31)
+japan_df <- generate_df(N=460, age_mean = 18.89, edu_mean = 12.36, female_percentage = 0.437,
+                          sport_mean = 3.37, sport_se = 0.13, stress_mean = 52.36, stress_se = 1.39,
+                          restrained_eating_mean = 32.03, restrained_eating_se = 0.31,
+                          emotional_eating_mean = 35.26, emotional_eating_se = 0.42,
+                          external_eating_mean = 27.25, external_eating_se = 0.26,
+                          gender_social_role_mean = 11.89, gender_social_role_se = 0.17,
+                          soc_mean = 52.55, soc_se = 0.52,
+                          family_support_mean = 20.36, family_support_se = 0.3,
+                          friends_support_mean = 19.57, friends_support_se = 0.29,
+                          sign_support_mean = 19.91, sign_support_se = 0.29)
+```
+5. Based on the beta coefficient and significant level given in the article, generate column `QoL_phy`, `QoL_mt`, `emotional_strain`, `symptom` in both **austria_df** and **japan_df**. Change gender to `f` and `m`, as factor data type.
+```{r, include=FALSE}
+austria_df$QoL_phy <- .137 * (austria_df$sports - 2.45) + 
+  -.086 * (austria_df$age - 22.13) +
+  .112 * (austria_df$restrained_eating - 22.63) +
+  .142 * (austria_df$friends_support - 24.83) +
+  54.02 + rnorm(421, sd=0.38 * sqrt(421))
+austria_df$QoL_mt <- -.121 * (austria_df$age - 22.13) + 
+  .468 * (austria_df$soc - 2.45) +
+  .354 * (austria_df$family_support - 24.4) +
+  -.211 * (austria_df$stress - 51) + 54.21 + rnorm(421, sd=0.38 * sqrt(421))
+austria_df$QoL_mt <- austria_df$QoL_mt - (mean(austria_df$QoL_mt - 54.21))
+austria_df$emotional_strain <- -.243 * (austria_df$gender - mean(austria_df$gender)) +
+  -.136 * (austria_df$age - 22.13) + 
+  .268 * (austria_df$soc - 2.45) +
+  .096 * (austria_df$gender_social_role - 10.96) +
+  -.194 * (austria_df$restrained_eating - 22.63) +
+  -.253 * (austria_df$stress - 51) + 8.78 + rnorm(421, sd=0.21 * sqrt(421))
+austria_df$emotional_strain <- austria_df$emotional_strain - (mean(austria_df$emotional_strain - 8.78))
+austria_df$symptom <- -.379 * (austria_df$soc - 2.45) +
+  .104 * (austria_df$age - 22.13) +
+  .231 * (austria_df$sign_support - 25.15) +
+  .185 * (austria_df$emotional_eating - 29.82) + 
+  .145 * (austria_df$stress - 51) + 25.56 + rnorm(421, sd=0.47 * sqrt(421))
+austria_df$symptom <- austria_df$symptom + (25.56 - mean(austria_df$symptom))
+austria_df$gender <- as.factor(ifelse(austria_df$gender==1, 'f', 'm'))
+
+japan_df$QoL_phy <- .296 * (japan_df$external_eating - 27.25) + 50.27 + rnorm(460, sd=0.36*sqrt(460))
+japan_df$QoL_mt <- .365 * (japan_df$soc - 52.55) +
+  -.377 * (japan_df$stress - 52.36) + 50.29 + rnorm(460, sd=0.36*sqrt(460))
+japan_df$emotional_strain <- .291 * (japan_df$soc - 52.55) +
+  -.329 * (japan_df$stress - 52.36) + 
+  -.204 * (japan_df$age - 18.89) + 9.23 + rnorm(460, sd=0.11*sqrt(460))
+japan_df$symptom <- -.341 * (japan_df$soc - 52.55) +
+  .157 * (japan_df$stress - 52.36) + 24.8 + rnorm(460, sd=0.44*sqrt(460))
+japan_df$gender <- as.factor(ifelse(japan_df$gender==1, 'f', 'm'))
+```
+6. Add column `country` to both data frames. **austria_df** with character *Austria* and **japan_df** with character *Japan*, change data type to factor.
+```{r, include=FALSE}
+austria_df$country <- as.factor(rep('Austria', nrow(austria_df)))
+japan_df$country <- as.factor(rep('Japan', nrow(japan_df)))
+```
+7. `rbind` two dataframe as **all_df** and change column `country` to factor data type
+```{r, include=FALSE}
+all_df <- rbind(austria_df, japan_df)
+```
+
+### Plots
+1. SOC and QoL_mt in both Austria and Japan.
+```{r, echo=FALSE, warning=FALSE}
+library(ggplot2)
+ggplot(all_df, aes(x=soc, y=QoL_mt)) + geom_point(aes(color=country)) +
+  geom_smooth(method = 'lm')
+```
+2. SOC and Symptom in both Austria and Japan 
+```{r, echo=FALSE}
+ggplot(all_df, aes(x=soc, y=symptom)) + geom_point(aes(color=country)) +
+  geom_smooth(method = 'lm')
+```
+3. Restrained eating in Austria and Japan
+```{r, echo=FALSE}
+ggplot(all_df, aes(x=country, y=restrained_eating)) +
+  geom_boxplot()
+```
+4. Gender and Social Role in Austria and Japan (The higher = more traditional gender role)
+```{r, echo=FALSE}
+ggplot(all_df, aes(x=gender_social_role, fill=country)) + geom_density(alpha=0.5)
+```
+5. Age and Stress in Austria sample
+```{r, echo=FALSE}
+ggplot(austria_df, aes(x=age, y=stress)) + geom_point(aes(color=gender)) +
+  geom_smooth(method = 'lm')
+```
+
+### Linear Regression Model
+1. Generate linear model in **austria_df** and **jaoan_df** as described response and predict veriables mentioned earlier. Each country has four linear models.
+```{r, echo=FALSE}
+austria_phy <- lm(QoL_phy ~ . - QoL_mt - emotional_strain - symptom, data = austria_df[-18])
+japan_phy <- lm(QoL_phy ~ . - QoL_mt - emotional_strain - symptom, data = japan_df[-18])
+austria_mt <- lm(QoL_mt ~ . - QoL_phy - emotional_strain - symptom, data = austria_df[-18])
+japan_mt <- lm(QoL_mt ~ . - QoL_phy - emotional_strain - symptom, data = japan_df[-18])
+austria_strain <- lm(emotional_strain ~ . - QoL_mt - QoL_phy - symptom, data = austria_df[-18])
+japan_strain <- lm(emotional_strain ~ . - QoL_mt - QoL_phy - symptom, data = japan_df[-18])
+austria_symptom <- lm(symptom ~ . - QoL_mt - QoL_phy - emotional_strain, data = austria_df[-18])
+japan_symptom <- lm(symptom ~ . - QoL_mt - QoL_phy - emotional_strain, data = japan_df[-18])
+```
+
+2. Show some summarizes of fitted model
+  * austria_df: QoL_mt as response variable
+    ```{r, echo=FALSE, comment = ''}
+    summary(austria_mt)
+    ```
+
+  * japan_df: QoL_mt as response variable
+    ```{r, echo=FALSE, comment = ''}
+    summary(japan_mt)
+    ```
+    
+    
+3. Residual plot of some models
+    * `austria_strain`
+    
+    ```{r, echo=FALSE}
+    plot(austria_strain, 1)
+    ```
+    
+    * `japan_strain`
+    
+    ```{r, echo=FALSE}
+    plot(japan_strain, 1)
+    ```
+
+### Discussion
+In both data frames, `QoL_mt` and `emotional_strain` have the highest R-squared value. SOC is significant variable in all linear models except for physical domain of QoL. In Austria sample, age and stress are negatively related, SOC and family support are positively related to mental QoL. In Japan sample, stress is negatively related and SOC positively related to mental QoL. For emotional strain, older age, lower SOC, less traditional gender and social role, more restrained eating, and more stress explaning 42% of the variance in Austrian students. In Japanese sample, only older age, lower SOC and more stress were significant predictors. Symptoms, are negatively aoociated with SOC and positively associated with stress. Only in Austrian smaple, oder age, more support from significant others and higher emotional eating are significantly related to symptoms.
+
+This study proved that SOC is an important indicator in salutogenic model, and it is an essancial character for healthy human being in todays society. 
+
+### Reference
+1. Greimel, E., Kato, Y., Müller-Gartner, M., Salchinger, B., Roth, R., & Freidl, W. (2016). Internal and External Resources as Determinants of Health and Quality of Life. PLOS ONE, 11(5), e0153232. doi:10.1371/journal.pone.0153232
+2. Golembiewski, J. (2010). Start making sense. Facilities, 28(3/4), 100-117. doi:10.1108/02632771011023096
+3. Your Sense of Coherence. (2016). Psych Central.com. Retrieved 17 May 2016, from http://psychcentral.com/lib/your-sense-of-coherence/
